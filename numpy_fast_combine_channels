@@ -1,0 +1,38 @@
+import os
+import numpy as np
+from PIL import Image
+
+# Directory containing the texture files
+directory = r"C:\Users\Kamal Khanal\Desktop\Photoshop"
+
+# Suffixes of the texture files
+suffixes = ["_Roughness", "_Metallic", "_AO"]
+
+# Initialize a dictionary to store the images for each suffix
+images = {}
+
+# Iterate over the files in the directory and load the corresponding images
+for file in os.listdir(directory):
+    for suffix in suffixes:
+        if file.endswith(suffix + ".jpg"):
+            images[suffix] = Image.open(os.path.join(directory, file))
+            break  # Only load one image per suffix
+
+# Check if all texture files were found
+if len(images) != len(suffixes):
+    missing_suffixes = [suffix for suffix in suffixes if suffix not in images]
+    print("Texture files not found for suffixes:", ", ".join(missing_suffixes))
+else:
+    # Combine the channels using NumPy
+    combined_data = np.stack([
+        images[suffix].split()[0] for suffix in suffixes
+    ], axis=-1)
+
+    # Create a new image from the combined data
+    combined_image = Image.fromarray(combined_data.astype(np.uint8), 'RGB')
+
+    # Save the combined image
+    output_path = os.path.join(directory, "_RMA.jpg")
+    combined_image.save(output_path, "JPEG")
+
+    print("Textures combined and saved as:", output_path)
